@@ -27,3 +27,6 @@
  *    I believe in...
  *    You - 2026-06-09
  *  *******************************************************/
+
+import User from "./class.user.js";
+import Post from "./class.post.js";

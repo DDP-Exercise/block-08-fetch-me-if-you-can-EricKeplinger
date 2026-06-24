@@ -20,3 +20,30 @@
  *      - href="mailto:.." for the email and
  *      - href=".." target="_blank" for the website.
  *  *******************************************************/
+
+export default class User {
+    constructor(users) {
+        this.id = users.id;
+        this.name = users.name;
+        this.username = users.username;
+        this.email = users.email;
+        this.website = users.website;
+        this.posts = [];
+    }
+
+    addPost(post) {
+        this.posts.push(post);
+    }
+
+    getMailLink() {
+        return `mailto:${this.email}`;
+    }
+
+    getWebsiteLink() {
+        if (this.website.startsWith("http")) {
+            return this.website;
+        }
+
+        return `https://${this.website}`;
+    }
+}
