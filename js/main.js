@@ -101,4 +101,105 @@ function renderUsers() {
     `).join("");
 }
 
+function togglePosts(userId) {
+    const user = users.find(user => user.id === userId);
+    const postsBox = app.querySelector(`[data-posts-for="${userId}"]`);
+
+    if (!user || !postsBox) {
+        return;
+    }
+
+    if (postsBox.hidden) {
+        postsBox.innerHTML = renderPosts(user.posts);
+        postsBox.hidden = false;
+    } else {
+        postsBox.hidden = true;
+    }
+}
+
+function renderPosts(posts) {
+    return posts.map(post => `
+        <article class="post">
+            <h3>${post.title}</h3>
+            <p>${post.body}</p>
+
+            <button data-action="load-comments" data-post-id="${post.id}">
+                Load comments
+            </button>
+
+            <div data-comments-for="${post.id}"></div>
+        </article>
+    `).join("");
+}
+
+function findPostById(postId) {
+    for (const user of users) {
+        const post = user.posts.find(post => post.id === postId);
+
+        if (post) {
+            return post;
+        }
+    }
+
+    return null;
+}
+
+function loadComments(postId) {
+    const post = findPostById(postId);
+    const commentsBox = app.querySelector(`[data-comments-for="${postId}"]`);
+
+    if (!post || !commentsBox) {
+        return;
+    }
+
+    if (post.commentsAreLoaded()) {
+        renderComments(commentsBox, post.comments);
+        return;
+    }
+
+    commentsBox.textContent = "Loading comments...";
+
+    getJSON(`${API}/comments?postId=${postId}`)
+        .then(comments => {
+            post.setComments(comments);
+            renderComments(commentsBox, comments);
+        })
+        .catch(error => {
+            console.error(error);
+            commentsBox.textContent = "Could not load comments.";
+        });
+}
+
+function renderComments(commentsBox, comments) {
+    commentsBox.innerHTML = comments.map(comment => `
+        <section class="comment">
+            <h4>${comment.name}</h4>
+            <p>${comment.body}</p>
+            <a href="mailto:${comment.email}">
+                ${comment.email}
+            </a>
+        </section>
+    `).join("");
+}
+
+app.addEventListener("click", event => {
+    const button = event.target.closest("button");
+
+    if (!button) {
+        return;
+    }
+
+    const action = button.dataset.action;
+
+    if (action === "toggle-posts") {
+        const userId = Number(button.dataset.userId);
+        togglePosts(userId);
+    }
+
+    if (action === "load-comments") {
+        const postId = Number(button.dataset.postId);
+        loadComments(postId);
+    }
+});
+
 init();
