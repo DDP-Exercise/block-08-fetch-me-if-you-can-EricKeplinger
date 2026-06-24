@@ -30,3 +30,75 @@
 
 import User from "./class.user.js";
 import Post from "./class.post.js";
+
+const API = "https://jsonplaceholder.typicode.com";
+
+let users = [];
+
+const app = document.createElement("main");
+document.body.append(app);
+
+async function getJSON(url) {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+        throw new Error(`Could not fetch data from ${url}`);
+    }
+
+    return response.json();
+}
+
+async function init() {
+    const userData = await getJSON(`${API}/users`);
+    const postData = await getJSON(`${API}/posts`);
+
+    users = userData.map(userInfo => new User(userInfo));
+
+    createPostsAndAssignToUsers(postData);
+
+    renderUsers();
+
+    console.log(users);
+}
+
+
+function createPostsAndAssignToUsers(postData) {
+    postData.forEach(postInfo => {
+        const matchingUser = users.find(user => user.id === postInfo.userId);
+
+        if (matchingUser) {
+            const post = new Post(postInfo);
+            matchingUser.addPost(post);
+        }
+    });
+}
+
+function renderUsers() {
+    app.innerHTML = users.map(user => `
+        <section class="user">
+            <h2>${user.name}</h2>
+
+            <p>${user.username}</p>
+
+            <p>
+                <a href="${user.getMailLink()}">
+                    ${user.email}
+                </a>
+            </p>
+
+            <p>
+                <a href="${user.getWebsiteLink()}" target="_blank">
+                    ${user.website}
+                </a>
+            </p>
+
+            <button data-action="toggle-posts" data-user-id="${user.id}">
+                Show posts
+            </button>
+
+            <div data-posts-for="${user.id}" hidden></div>
+        </section>
+    `).join("");
+}
+
+init();
