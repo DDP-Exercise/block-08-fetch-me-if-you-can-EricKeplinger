@@ -112,8 +112,12 @@ function togglePosts(userId) {
     if (postsBox.hidden) {
         postsBox.innerHTML = renderPosts(user.posts);
         postsBox.hidden = false;
+        button.textContent = "Hide posts";
+
     } else {
         postsBox.hidden = true;
+        button.textContent = "Show posts";
+
     }
 }
 
@@ -193,13 +197,17 @@ app.addEventListener("click", event => {
 
     if (action === "toggle-posts") {
         const userId = Number(button.dataset.userId);
-        togglePosts(userId);
+        togglePosts(userId, button);
     }
 
     if (action === "load-comments") {
         const postId = Number(button.dataset.postId);
         loadComments(postId);
+        button.textContent = "Comments loaded";
     }
 });
 
-init();
+init().catch(error => {
+    console.error("Initialization failed:", error);
+    app.textContent = "Sorry, something went wrong while loading the data.";
+});
